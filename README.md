@@ -20,7 +20,8 @@ Weatherly is a sleek and responsive weather web app that provides **real-time we
 ---
 
 ## 🌍 Live Demo
-👉 [Click here to view the live app](https://<Vivekpadavale11>.github.io/<Weather-app>/)
+(👉 [Click here to view the live app](https://Vivekpadavale11.github.io/Weather-app/)
+
 
 
 ---
