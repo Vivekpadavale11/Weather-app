@@ -1,45 +1,70 @@
-const apiKey = "6640dee2b16d760c931aa2d40fcca427";
-const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const apiKey = "6640dee2b16d760c931aa2d40fcca427"; // Replace with your OpenWeatherMap API key
 
-const searchBox = document.querySelector(".search input");
-const searchBtn = document.querySelector(".search button");
-const weatherIcon = document.querySelector(".weather-icon");
+document.getElementById("searchBtn").addEventListener("click", getWeather);
 
-// Function to fetch and display weather
-async function checkWeather(city) {
-  if (!city) return;
+async function getWeather() {
+  const city = document.getElementById("cityInput").value.trim();
+  if (city === "") return alert("Please enter a city name.");
 
-  const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
-  if (response.status === 404) {
-    alert("City not found. Please enter a valid city name.");
-    return;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("City not found");
+    const data = await response.json();
+
+    const temperature = Math.round(data.main.temp);
+    const description = data.weather[0].description;
+    const humidity = data.main.humidity;
+    const wind = data.wind.speed;
+    const feels = Math.round(data.main.feels_like);
+    const cityName = `${data.name}, ${data.sys.country}`;
+
+    // Display data
+    document.getElementById("temperature").innerText = `${temperature}°C`;
+    document.getElementById("description").innerText = description;
+    document.getElementById("humidity").innerText = `${humidity}%`;
+    document.getElementById("wind").innerText = `${wind} km/h`;
+    document.getElementById("feels").innerText = `${feels}°C`;
+    document.getElementById("cityName").innerText = cityName;
+
+    // Update weather icon
+    const weatherIcon = document.getElementById("weatherIcon");
+    if (description.includes("cloud")) {
+      weatherIcon.className = "fas fa-cloud";
+    } else if (description.includes("rain")) {
+      weatherIcon.className = "fas fa-cloud-showers-heavy";
+    } else if (description.includes("clear")) {
+      weatherIcon.className = "fas fa-sun";
+    } else if (description.includes("snow")) {
+      weatherIcon.className = "fas fa-snowflake";
+    } else {
+      weatherIcon.className = "fas fa-smog";
+    }
+
+    // Update background image based on temperature & condition
+    updateBackground(temperature, description);
+
+  } catch (error) {
+    alert("Error: " + error.message);
   }
-
-  const data = await response.json();
-
-  document.querySelector(".city").textContent = data.name;
-  document.querySelector(".temp").textContent = Math.round(data.main.temp) + "°C";
-  document.querySelector(".humidity").textContent = data.main.humidity + "%";
-  document.querySelector(".wind").textContent = data.wind.speed + " km/h";
-
-  // Update weather icon
-  const weather = data.weather[0].main;
-  if (weather === "Clouds") weatherIcon.src = "images/clouds.png";
-  else if (weather === "Clear") weatherIcon.src = "images/clear.png";
-  else if (weather === "Rain") weatherIcon.src = "images/rain.png";
-  else if (weather === "Drizzle") weatherIcon.src = "images/drizzle.png";
-  else if (weather === "Mist") weatherIcon.src = "images/mist.png";
 }
 
-// Event listener for search button
-searchBtn.addEventListener("click", () => {
-  checkWeather(searchBox.value);
-});
+// Function to change background image dynamically
+function updateBackground(temp, description) {
+  const background = document.getElementById("background");
 
-// Optional: search when pressing Enter key
-searchBox.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    checkWeather(searchBox.value);
+  if (description.toLowerCase().includes("rain")) {
+    background.style.backgroundImage = "url('images/rain.png')";
+  } else if (temp < 20) {
+    background.style.backgroundImage = "url('images/winter.png')";
+  } else if (temp >= 20 && temp <= 30) {
+    background.style.backgroundImage = "url('images/pleasant.png')";
+  } else if (temp > 30) {
+    background.style.backgroundImage = "url('images/summer.png')";
   }
-});
+
+  background.style.backgroundSize = "cover";
+  background.style.backgroundPosition = "center";
+  background.style.transition = "background-image 1s ease-in-out";
+}
